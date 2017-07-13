@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title>
+	<link rel="stylesheet" href="">
+	<link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap.min.css">
+	<script src="/javascripts/jquery.min.js" type="text/javascript"></script>
+	<script src="/javascripts/md5.js" type="text/javascript"></script>
+	<style type="text/css">
+		*{margin: 0px;padding: 0px}
+		html{font-size: 100px}
+		.panelLogin{
+			margin-bottom: 0rem;
+		}
+		.baidu-Title{
+			text-align: center;
+			font-size: 0.25rem;
+		}
+		.login{
+			height: 0.8rem;
+			margin-top: 0.2rem;
+		}
+		.login-img{
+			width: 1.38rem;
+			height: 0.46rem;
+			background: url(/images/11.png) no-repeat;
+			background-size: 100% 100%;
+			margin: 0 auto;
+		}
+		.formLogin input,.formLogin button{
+			height: 0.4rem;
+		}
+		.btnLogin{
+			width: 100%;
+			height: 100%;
+			font-size: 0.18rem;
+		}
+		.register{
+			height: 0.5rem;
+			text-align: center;
+			font-size: 0.2rem;
+			margin-top: 0.4rem;
+			padding-bottom: 1rem;
+		}
+		.register a{
+			text-decoration: none;
+			border: 0.01rem solid blue;
+			padding: 0.1rem;
+		}
+		.delLogin{
+			position: relative;
+		}
+		.delLogin span{
+			position: absolute;
+			right: 0.25rem;
+			top: 0.1rem;
+			width: 0.18rem;
+			height:0.18rem;
+			background:#ccc;
+			border-radius: 50%;
+			text-align: center;
+			line-height: 0.18rem;
+			color: #fff;
+			display: none;
+			
+		}
+	</style>
+	<script type="text/javascript">
+	    (function (win,doc){
+			function changeSize(){
+				doc.documentElement.style.fontSize=doc.documentElement.clientWidth/320*50+'px';
+			}
+			changeSize();
+			win.addEventListener('resize',changeSize,false);
+		})(window,document);
+		$(function(){
+			$('#usersName').focus();
+			$("#usersName").bind("input propertychange", function() {
+				if($(this).val().length>0){
+					$(this).next().css('display','block');
+				}
+			});
+			$("#pwd").bind("input propertychange", function() {
+				if($(this).val().length>0){
+					$(this).next().css('display','block');
+				}
+			});
+			$('.clearContent').click(function(){
+				$(this).prev().val('');
+				$(this).css('display','none');
+			});
+			$('#login').click(function(){
+				var usersName = $('#usersName').val();
+				var pwd =hex_md5($('#pwd').val());
+				//console.log(hex_md5($('#usersName').val()));
+				//console.log(hex_md5('654321'));
+				var bOk = true;
+				if(usersName==''||pwd==''){
+					alert('用户名或密码不能为空');
+					bOk = false;
+				}else{
+					$.ajax({
+						url:'/users/logins',
+						type:'post',
+						data:{
+							usersName:usersName,
+						},
+						success:function(data){
+							console.log(data);
+							if(data.rlt==0){
+								alert(data.msg);
+								$('#usersName').val('');
+								$('#pwd').val('');
+							}else if(data.rlt==1){
+								if(pwd!=data.result[0].password){
+									console.log(pwd);
+									console.log(data.result[0].password);
+									alert('密码错误，请重新输入');
+								}else{
+									localStorage.setItem('name',usersName);
+									$('form').submit();
+									//location.href = '/users?usersName='+usersName;
+								}
+							}
+						},
+						error:function(err){
+							console.log(err);
+						}
+					});
+				}
+				('name',usersName);
+			});
+		
+		});
+	</script>
+</head>
+<body>
+	<div class="panel panel-default panelLogin">
+	  <div class="panel-heading">
+	    <h3 class="panel-title baidu-Title">登录百度账号</h3>
+	  </div>
+	  <div class="panel-body">
+	  	<div class="login">
+	  		<div class="login-img"></div>
+	  	</div>
+	    <!-- <form class="form-horizontal formLogin" action="" target="nm_iframe" method="post"> -->
+	    <form class="form-horizontal formLogin" action="/users"  method="post">
+		  <div class="form-group">
+		    <div class="col-sm-10 delLogin">
+		      <input type="text" class="form-control" name="usersName" id="usersName" placeholder="用户名/手机号">
+		      <span class="clearContent">X</span>
+		    </div>
+		  </div>
+		  <div class="form-group">
+		    <div class="col-sm-10 delLogin">
+		      <input type="password" class="form-control" name="pwd" id="pwd" placeholder="Password">
+		      <span class="clearContent">X</span>
+		    </div>
+		  </div>
+		  <div class="form-group">
+		    <div class="col-sm-offset-2 col-sm-10">
+		      <button type="button" class="btn btn-primary btn-default btnLogin" id="login">登录</button>
+		    </div>
+		  </div>
+		</form>
+		<iframe id="id_iframe" name="nm_iframe" style="display:none;"></iframe>  
+		<div class="register">
+			<a href="/users/register">立即注册</a>
+		</div>
+	  </div>
+	</div>
+</body>
+</html>
